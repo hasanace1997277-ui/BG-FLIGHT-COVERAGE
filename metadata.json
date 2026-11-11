@@ -1,0 +1,8 @@
+{
+  "name": "AeroTurn - Flight Coverage & Load Control",
+  "description": "Real-time airline flight turnaround coverage, ramp-to-load-controller telemetry, captain fuel logging, and operational efficiency analytics.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

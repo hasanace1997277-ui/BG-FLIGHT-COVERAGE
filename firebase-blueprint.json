@@ -1,0 +1,113 @@
+{
+  "entities": {
+    "FlightTurn": {
+      "title": "Flight Turnaround",
+      "description": "Real-time flight turnaround operational record capturing milestones, captain fuel figures, and load control status",
+      "type": "object",
+      "properties": {
+        "flightNumber": { "type": "string", "maxLength": 32 },
+        "aircraftReg": { "type": "string", "maxLength": 16 },
+        "crewName": { "type": "string", "maxLength": 64 },
+        "flightDate": { "type": "string", "maxLength": 16 },
+        "aircraftType": { "type": "string", "maxLength": 32 },
+        "originAirport": { "type": "string", "maxLength": 8 },
+        "destAirport": { "type": "string", "maxLength": 8 },
+        "gate": { "type": "string", "maxLength": 16 },
+        "stand": { "type": "string", "maxLength": 16 },
+        "status": {
+          "type": "string",
+          "enum": ["SCHEDULED", "TOUCHED_DOWN", "CHOCKS_ON", "DOOR_OPEN", "BOARDING", "DOOR_CLOSED", "PUSHED_BACK", "DEPARTED", "CANCELLED"]
+        },
+        "scheduledArrival": { "type": "string", "maxLength": 32 },
+        "touchDownTime": { "type": "string", "maxLength": 32 },
+        "chocksOnTime": { "type": "string", "maxLength": 32 },
+        "doorOpenTime": { "type": "string", "maxLength": 32 },
+        "doorCloseTime": { "type": "string", "maxLength": 32 },
+        "pushBackTime": { "type": "string", "maxLength": 32 },
+        "touchDownRecorded": { "type": "boolean" },
+        "chocksOnRecorded": { "type": "boolean" },
+        "doorOpenRecorded": { "type": "boolean" },
+        "pushBackRecorded": { "type": "boolean" },
+        "blockFuel": { "type": "number" },
+        "tripFuel": { "type": "number" },
+        "taxiFuel": { "type": "number" },
+        "fuelSentAt": { "type": "string", "maxLength": 32 },
+        "scheduledDeparture": { "type": "string", "maxLength": 32 },
+        "targetOffBlockTime": { "type": "string", "maxLength": 32 },
+        "minimumGroundTimeMinutes": { "type": "number" },
+        "fuelUnit": { "type": "string", "enum": ["KG", "LBS"] },
+        "arrivalFuel": { "type": "number" },
+        "requestedFuel": { "type": "number" },
+        "upliftFuel": { "type": "number" },
+        "captainFinalFuel": { "type": "number" },
+        "density": { "type": "number" },
+        "captainSignOff": { "type": "string", "maxLength": 64 },
+        "captainConfirmedAt": { "type": "string", "maxLength": 32 },
+        "fuelStatus": {
+          "type": "string",
+          "enum": ["PENDING", "ENTERED_BY_RAMP", "VERIFIED_BY_LC", "DISCREPANCY"]
+        },
+        "discrepancyReason": { "type": "string", "maxLength": 256 },
+        "loadControlStatus": {
+          "type": "string",
+          "enum": ["PENDING_FUEL", "FUEL_CONFIRMED", "LOADSHEET_GENERATING", "LOADSHEET_RELEASED", "TRIM_COMPLETED"]
+        },
+        "loadControllerNotes": { "type": "string", "maxLength": 512 },
+        "coverageManNotes": { "type": "string", "maxLength": 512 },
+        "coverageManName": { "type": "string", "maxLength": 64 },
+        "loadControllerName": { "type": "string", "maxLength": 64 },
+        "delayMinutes": { "type": "number" },
+        "delayReasonCode": { "type": "string", "maxLength": 16 },
+        "delayDescription": { "type": "string", "maxLength": 256 },
+        "paxCount": { "type": "number" },
+        "cargoWeight": { "type": "number" },
+        "baggageWeight": { "type": "number" },
+        "createdAt": { "type": "string", "maxLength": 32 },
+        "updatedAt": { "type": "string", "maxLength": 32 }
+      },
+      "required": ["flightNumber", "aircraftReg", "status"]
+    },
+    "OperationalMessage": {
+      "title": "Operational Message",
+      "description": "Real-time communication message between ramp coverage agent and load controller",
+      "type": "object",
+      "properties": {
+        "flightId": { "type": "string", "maxLength": 64 },
+        "senderRole": { "type": "string", "enum": ["COVERAGE_MAN", "LOAD_CONTROLLER", "SYSTEM"] },
+        "senderName": { "type": "string", "maxLength": 64 },
+        "message": { "type": "string", "maxLength": 512 },
+        "messageType": { "type": "string", "enum": ["FUEL_ALERT", "MILESTONE_UPDATE", "DELAY_WARNING", "CHAT", "LOADSHEET_ACK"] },
+        "timestamp": { "type": "string", "maxLength": 32 }
+      },
+      "required": ["flightId", "senderRole", "senderName", "message", "timestamp"]
+    },
+    "TurnaroundLog": {
+      "title": "Turnaround Audit Log",
+      "description": "Chronological milestone audit trail for turnaround telemetry and post-flight analysis",
+      "type": "object",
+      "properties": {
+        "flightId": { "type": "string", "maxLength": 64 },
+        "action": { "type": "string", "maxLength": 64 },
+        "operatorRole": { "type": "string", "maxLength": 32 },
+        "operatorName": { "type": "string", "maxLength": 64 },
+        "details": { "type": "string", "maxLength": 512 },
+        "timestamp": { "type": "string", "maxLength": 32 }
+      },
+      "required": ["flightId", "action", "timestamp"]
+    }
+  },
+  "firestore": {
+    "/flights/{flightId}": {
+      "schema": "FlightTurn",
+      "description": "Active and completed flight turnaround operational records"
+    },
+    "/flights/{flightId}/messages/{messageId}": {
+      "schema": "OperationalMessage",
+      "description": "Live ramp-to-load-controller communications for this flight"
+    },
+    "/flights/{flightId}/logs/{logId}": {
+      "schema": "TurnaroundLog",
+      "description": "Chronological audit logs for milestone and fuel telemetry"
+    }
+  }
+}

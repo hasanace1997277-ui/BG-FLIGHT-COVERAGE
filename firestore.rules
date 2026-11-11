@@ -1,0 +1,73 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Default deny all unknown collections
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Helper functions
+    function isValidId(id) {
+      return id is string && id.size() > 0 && id.size() <= 128;
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isValidFlight(data) {
+      return data.flightNumber is string && data.flightNumber.size() <= 32
+        && (!('aircraftReg' in data) || (data.aircraftReg is string && data.aircraftReg.size() <= 16))
+        && data.status is string && data.status.size() <= 32;
+    }
+
+    function isValidMessage(data) {
+      return data.flightId is string && data.flightId.size() <= 64
+        && data.senderRole is string && data.senderRole.size() <= 32
+        && data.senderName is string && data.senderName.size() <= 64
+        && data.message is string && data.message.size() <= 512
+        && data.timestamp is string && data.timestamp.size() <= 32;
+    }
+
+    function isValidLog(data) {
+      return data.flightId is string && data.flightId.size() <= 64
+        && data.action is string && data.action.size() <= 64
+        && data.timestamp is string && data.timestamp.size() <= 32;
+    }
+
+    // Flight turnarounds collection
+    match /flights/{flightId} {
+      allow get, list: if true;
+      allow create: if isValidId(flightId) && isValidFlight(incoming());
+      allow update: if isValidId(flightId) && isValidFlight(incoming());
+      allow delete: if isValidId(flightId);
+
+      // Operational messages subcollection
+      match /messages/{messageId} {
+        allow get, list: if true;
+        allow create: if isValidId(messageId) && isValidMessage(incoming());
+        allow update: if isValidId(messageId) && isValidMessage(incoming());
+        allow delete: if isValidId(messageId);
+      }
+
+      // Turnaround logs subcollection
+      match /logs/{logId} {
+        allow get, list: if true;
+        allow create: if isValidId(logId) && isValidLog(incoming());
+        allow update: if isValidId(logId) && isValidLog(incoming());
+        allow delete: if isValidId(logId);
+      }
+    }
+
+    // Health check connection path
+    match /test/{testId} {
+      allow get, list: if true;
+      allow write: if true;
+    }
+  }
+}
